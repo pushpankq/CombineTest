@@ -7,11 +7,14 @@
 //
 
 import UIKit
+import Combine
 
 class ViewController: UIViewController {
     
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var addButton: UIButton!
+    var subscriptions = Set<AnyCancellable>()
+
     
     var items: [String] = []
 
@@ -26,7 +29,11 @@ extension ViewController {
     @IBAction func addButtonTapped(_ sender: UIButton) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let addItemViewController = storyboard.instantiateViewController(identifier: "addItemViewController") as! AddItemViewController
-        addItemViewController.delegate = self
+        addItemViewController.newItem.handleEvents(receiveOutput: { [unowned self] newItem in
+            self.updateTableView(withItem: newItem)
+        })
+            .sink { _ in }
+            .store(in: &subscriptions)
         present(addItemViewController, animated: true)
     }
 }
@@ -43,8 +50,8 @@ extension ViewController: UITableViewDataSource {
     }
 }
 
-extension ViewController: AddItemViewControllerDelegate {
-    func didAddItem(_ item: String) {
+extension ViewController {
+     func updateTableView(withItem item: String) {
         self.items.append(item)
         tableView.beginUpdates()
         tableView.insertRows(at: [.init(row: items.count - 1, section: 0)], with: .automatic)

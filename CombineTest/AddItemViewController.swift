@@ -7,27 +7,23 @@
 //
 
 import UIKit
-
-protocol AddItemViewControllerDelegate: class {
-    func didAddItem(_ item: String)
-}
+import Combine
 
 class AddItemViewController: UIViewController {
+    
+    let newItem = PassthroughSubject<String, Never>()
     
     @IBOutlet weak var textField: UITextField!
     @IBOutlet weak var doneButton: UIButton!
     
-    weak var delegate: AddItemViewControllerDelegate?
-
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .red
 
-        // Do any additional setup after loading the view.
     }
     
     @IBAction func doneButtonTapped(_ sender: UIButton) {
-        delegate?.didAddItem(textField.text!)
+        newItem.send(textField.text!)
         self.dismiss(animated: true, completion: nil)
     }
 
